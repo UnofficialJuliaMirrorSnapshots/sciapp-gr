@@ -1,0 +1,18 @@
+#!/bin/sh
+if [ "$(basename "${1}")" = '.' ]; then
+  exit 1
+fi
+cwd="${PWD}"
+cd "$(dirname "${1}")"
+dir=$(readlink "$(basename "${1}")")
+while [ "${dir}" ]; do
+  cd "$(dirname "${dir}")"
+  dir=$(readlink "$(basename "${1}")")
+done
+name="${PWD}/$(basename "${1}")"
+cd "${cwd}"
+if [ "${name}" = "`pwd`" ]; then
+  exit 1
+else
+  exit 0
+fi
