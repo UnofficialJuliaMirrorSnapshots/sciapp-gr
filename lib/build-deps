@@ -1,0 +1,96 @@
+#!/bin/sh
+
+OS=`uname`
+ID=
+DESCR=
+REL=
+KERNEL=`uname -r`
+MACH=`uname -m`
+
+if [ "${OS}" = "Darwin" ] ; then
+    ID='OS X'
+    DESCR=`sw_vers -productName`
+    build=`sw_vers -buildVersion`
+    REL="`sw_vers -productVersion` ($build)"
+elif [ "${OS}" = "Linux" ] ; then
+    if [ "x`which lsb_release 2>/dev/null`" != "x" ] ; then
+        ID=`lsb_release -s -i`
+        DESCR=`lsb_release -s -d | sed s/\"//g | sed s/\ release//`
+        REL=`lsb_release -s -r`
+    elif [ -f /etc/redhat-release ] ; then
+	ID='Red Hat'
+	DESCR=`cat /etc/redhat-release | sed s/\ release//`
+	REL=`cat /etc/redhat-release | sed s/.*release\ // | sed s/\ .*//`
+    elif [ -f /etc/fedora-release ] ; then
+	ID='Fedora'
+	DESCR=`cat /etc/fedora-release | sed s/\ release//`
+	REL=`cat /etc/fedora-release | sed s/.*release\ // | sed s/\ .*//`
+    elif [ -f /etc/SuSE-release ] ; then
+	ID='openSUSE project'
+	DESCR=`cat /etc/SuSE-release | tr "\n" ' '| sed s/VERSION.*//`
+	REL=`cat /etc/SuSE-release | tr "\n" ' ' | sed s/.*=\ //`
+    fi
+fi
+
+echo " "
+echo "      OS name: $OS"
+echo " Distribution: $ID"
+echo "  Description: $DESCR"
+echo "      Release: $REL"
+echo "       Kernel: $KERNEL"
+echo " Architecture: $MACH"
+echo " "
+
+if [ "$ID" != "" ] ; then
+  cat <<eof
+The following pre-installation steps are required for a GR framework
+software installation:
+
+eof
+
+fi
+
+if [ "$ID" = "OS X" ] ; then
+  cat <<eof
+- Install "Xcode" via the Mac App Store and the "Xcode Command Line Tools"
+- Install the latest version of XQuartz (http://xquartz.macosforge.org)
+eof
+
+elif [ "$ID" = "Red Hat" -o "$ID" = "CentOS" ] ; then
+  cat <<eof
+yum install gcc gcc-c++ gcc-gfortran ghostscript-devel python2 \
+texlive-collection-latex texlive-dvipng cmake patch
+eof
+
+elif [ "$ID" = "Fedora" ] ; then
+  cat <<eof
+yum install gcc gcc-c++ gcc-gfortran ghostscript-devel python2 \
+texlive-collection-latex texlive-dvipng wxGTK-devel glfw-devel zeromq3-devel \
+libjpeg-turbo-devel
+eof
+
+elif [ "$ID" = "Debian" ] ; then
+  cat <<eof
+apt-get install libx11-dev libxft-dev libxt-dev python2.7 \
+libgl1-mesa-dev libgs-dev texlive-latex3 dvipng qt4-dev-tools \
+libgtk2.0-dev libwxgtk3.0-dev libglfw3-dev libzmq3-dev cmake
+eof
+
+elif [ "$ID" = "Ubuntu" ] ; then
+  cat <<eof
+apt-get install libx11-dev libxft-dev libxt-dev python2.7 \
+libgl1-mesa-dev libgs-dev texlive-latex3 dvipng qt4-dev-tools \
+libgtk2.0-dev libwxgtk2.8-dev libzmq3-dev cmake
+
+The package libglfw-dev is too old.
+eof
+
+elif [ "$ID" = "openSUSE project" ] ; then
+  cat <<eof
+zypper install gcc gcc-c++ gcc-fortran libX11-devel python2 \
+texlive-latex texlive-dvipng wxWidgets-devel ghostscript-devel cmake patch
+eof
+
+fi
+
+echo " "
